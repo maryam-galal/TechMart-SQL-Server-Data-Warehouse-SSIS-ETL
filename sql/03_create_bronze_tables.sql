@@ -1,4 +1,5 @@
 USE [TechMark_DWH]
+GO
 -- FIRST: Creating Alex tables in Broze Layer 
 CREATE TABLE Bronze.Sap_TechMart_ALEX_Customers
 (
