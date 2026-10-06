@@ -13,34 +13,57 @@ The goal of this project was to build a complete data pipeline for **TechMart**,
 The pipeline follows a three-layer Medallion Architecture:
 
 ```text
-Source Systems
-     │
-     ├── Cairo Database
-     │
-     └── Alexandria Database
-             │
-             ▼
-       ┌─────────────┐
-       │    Bronze   │
-       │  Raw Data   │
-       └─────────────┘
-             │
-             ▼
-       ┌─────────────┐
-       │    Silver   │
-       │ Cleaned &   │
-       │ Transformed │
-       └─────────────┘
-             │
-             ▼
-       ┌─────────────┐
-       │     Gold    │
-       │ Analytical  │
-       │    Views    │
-       └─────────────┘
-             │
-             ▼
-        Power BI
+                         SOURCE SYSTEMS
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+        ┌───────────────┐           ┌───────────────┐
+        │ Cairo Database│           │ Alexandria DB │
+        └───────┬───────┘           └───────┬───────┘
+                │                           │
+                └─────────────┬─────────────┘
+                              ▼
+                    ┌───────────────────┐
+                    │      BRONZE       │
+                    │    Raw Data       │
+                    │                   │
+                    │ Source → Bronze   │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │      STAGING      │
+                    │                   │
+                    │ Clean & Validate  │
+                    │ • Trim / Normalize│
+                    │ • Data Validation │
+                    │ • Reject Invalid  │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │      SILVER       │
+                    │                   │
+                    │ Integrated &      │
+                    │ Transformed Data  │
+                    │                   │
+                    │ MERGE / UPSERT     │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │       GOLD        │
+                    │                   │
+                    │ Analytical Views  │
+                    │ & Business KPIs   │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                         ┌──────────┐
+                         │ POWER BI │
+                         │ Reports  │
+                         │ Dashboards│
+                         └──────────┘
 ```
 
 ---
