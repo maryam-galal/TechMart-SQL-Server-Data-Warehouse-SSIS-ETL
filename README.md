@@ -217,10 +217,9 @@ The Gold layer is connected to **Power BI** for reporting and visualization.
 
 The dashboard includes metrics such as:
 
-- **Total Sales:** 850,000
-- **Total Quantity:** 28
-- **Total Orders:** 4
-- **Average Order Value:** 212,500
+- **Total Sales:** 425,000
+- **Total Quantity:** 14
+- **Average Order Value:** 106,000
 
 It also provides:
 
