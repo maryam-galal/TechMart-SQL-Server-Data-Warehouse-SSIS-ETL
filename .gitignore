@@ -1,0 +1,5 @@
+# Visual Studio / SSIS generated files
+bin/
+obj/
+.vs/
+*.dtproj.user
