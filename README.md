@@ -1,353 +1,319 @@
 # TechMart — SQL Server Data Warehouse & SSIS ETL
 
-An end-to-end **on-premises Data Warehousing and ETL project** built using **Microsoft SQL Server, SQL Server Integration Services (SSIS), SQL Server Agent, and Power BI**.
+An end-to-end **Data Warehousing and ETL project** built using **Microsoft SQL Server, SSIS, T-SQL, and Power BI**.
 
-The project demonstrates how data can be extracted from multiple source databases, transformed through a **Medallion Architecture**, loaded incrementally into a data warehouse, and finally exposed through analytical views and Power BI dashboards.
+The project integrates data from two branch databases — **Cairo** and **Alexandria** — into a centralized data warehouse using a **Medallion Architecture** with Bronze, Staging, Silver, and Gold layers.
 
----
-
-## Project Overview
-
-The goal of this project was to build a complete data pipeline for **TechMart**, integrating data from multiple source systems into a centralized data warehouse.
-
-The pipeline follows a three-layer Medallion Architecture:
-
-```text
-                         SOURCE SYSTEMS
-                              │
-                ┌─────────────┴─────────────┐
-                │                           │
-        ┌───────────────┐           ┌───────────────┐
-        │ Cairo Database│           │ Alexandria DB │
-        └───────┬───────┘           └───────┬───────┘
-                │                           │
-                └─────────────┬─────────────┘
-                              ▼
-                    ┌───────────────────┐
-                    │      BRONZE       │
-                    │    Raw Data       │
-                    │                   │
-                    │ Source → Bronze   │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │      STAGING      │
-                    │                   │
-                    │ Clean & Validate  │
-                    │ • Trim / Normalize│
-                    │ • Data Validation │
-                    │ • Reject Invalid  │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │      SILVER       │
-                    │                   │
-                    │ Integrated &      │
-                    │ Transformed Data  │
-                    │                   │
-                    │ MERGE / UPSERT     │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                    ┌───────────────────┐
-                    │       GOLD        │
-                    │                   │
-                    │ Analytical Views  │
-                    │ & Business KPIs   │
-                    └─────────┬─────────┘
-                              │
-                              ▼
-                         ┌──────────┐
-                         │ POWER BI │
-                         │ Reports  │
-                         │ Dashboards│
-                         └──────────┘
-```
+The final Gold layer is connected to Power BI to provide business-focused reporting and analysis.
 
 ---
 
-## Technologies Used
+## 📌 Project Overview
 
-- **Microsoft SQL Server**
-- **SQL Server Integration Services (SSIS)**
-- **SQL Server Agent**
-- **T-SQL**
-- **Stored Procedures**
-- **Medallion Architecture**
-- **ETL / Data Warehousing**
-- **Incremental Loading**
-- **Dimensional Modeling**
-- **Power BI**
+The main goal of the project is to build a complete data pipeline that:
 
----
+- Extracts data from multiple source databases
+- Loads raw data into the Bronze layer
+- Uses a Staging layer for intermediate processing
+- Cleans and integrates data into the Silver layer
+- Builds a business-ready Gold analytical model
+- Implements incremental loading using `MERGE`
+- Automates ETL execution using SSIS and SQL Server Agent
+- Provides analytical reporting through Power BI
 
-## Architecture
+### Source Systems
 
-### 1. Source Layer
+The project uses two source databases:
 
-The project uses two source databases representing different business locations:
+- **TechMart_Cairo**
+- **TechMart_Alex**
 
-- Cairo
-- Alexandria
-
-The source systems contain business data such as:
+Each source contains:
 
 - Customers
 - Employees
 - Products
 - Orders
-- Order Details
-
-The two sources are integrated into a centralized data warehouse.
+- OrderDetails
 
 ---
 
-### 2. Bronze Layer
-
-The Bronze layer stores the incoming data with minimal transformation.
-
-Separate Bronze tables are maintained for the different source systems.
-
-Examples:
+## 🏗️ Architecture
 
 ```text
-bronze.TechMart_Cairo_Customers
-bronze.TechMart_Cairo_Employees
-bronze.TechMart_Cairo_Products
-bronze.TechMart_Cairo_Orders
-bronze.TechMart_Cairo_OrderDetails
-
-bronze.TechMart_Alex_Customers
-bronze.TechMart_Alex_Employees
-bronze.TechMart_Alex_Products
-bronze.TechMart_Alex_Orders
-bronze.TechMart_Alex_OrderDetails
+                    SOURCE SYSTEMS
+              ┌───────────────────────┐
+              │   Cairo Database      │
+              │   Alexandria Database │
+              └───────────┬───────────┘
+                          │
+                          ▼
+                    🥉 BRONZE
+                 Raw Source Data
+                          │
+                          ▼
+                    STAGING
+             Clean / Validate / Prepare
+                          │
+                          ▼
+                    🥈 SILVER
+             Integrated & Transformed
+                          │
+                          ▼
+                     🥇 GOLD
+             Business-Ready Data Model
+                          │
+                          ▼
+                     POWER BI
+               Reporting & Analysis
 ```
 
-The Bronze layer provides a staging area where source data can be loaded before further transformation.
+---
+
+## 🥉 Bronze Layer
+
+The Bronze layer stores raw data extracted from the source databases.
+
+The source data is loaded into separate Bronze tables for the Cairo and Alexandria branches.
+
+Example tables include:
+
+- Customers
+- Employees
+- Products
+- Orders
+- OrderDetails
+
+The Bronze layer preserves the source data before further transformation.
 
 ---
 
-### 3. Silver Layer
+## 🔄 Staging Layer
 
-The Silver layer contains cleaned and transformed data.
+The Staging layer is used as an intermediate processing area between Bronze and Silver.
 
-Data from the different source systems is integrated and prepared for analytical processing.
+It provides a place to:
 
-Typical transformations include:
-
-- Data cleaning
-- Standardization
-- Combining data from multiple sources
-- Handling updated records
-- Applying business rules
-- Preparing data for the Gold layer
+- Prepare incoming data
+- Validate records
+- Apply required transformations
+- Prepare data for integration into the Silver layer
 
 ---
 
-### 4. Gold Layer
+## 🥈 Silver Layer
 
-The Gold layer contains business-ready data designed for reporting and analysis.
+The Silver layer contains cleaned and integrated data from the different source branches.
 
-Analytical views are created on top of the processed warehouse data to answer business questions and provide Power BI with reporting-ready datasets.
+Data from Cairo and Alexandria is processed into a centralized structure suitable for downstream analytical processing.
+
+The project uses **T-SQL stored procedures with `MERGE` statements** to handle new and updated records.
+
+### Incremental Loading
+
+Instead of processing all records every time, the ETL process identifies new and changed records using ingestion/update timestamps.
+
+The `MERGE` procedures then:
+
+- Insert new records
+- Update existing records when changes are detected
+
+This allows the pipeline to process incremental changes rather than reloading the entire dataset unnecessarily.
 
 ---
 
-## ETL Pipeline
+## 🥇 Gold Layer
 
-The ETL process was implemented using **SQL Server Integration Services (SSIS)**.
+The Gold layer contains the analytical data model used for reporting.
 
-The SSIS package contains both a **Control Flow** and multiple **Data Flow Tasks**.
+The model is organized around a central sales fact table and supporting dimensions.
 
-### Control Flow
+### Main Components
 
-The overall Control Flow is organized to execute the pipeline in the required order.
+**FactSales**
 
-A simplified workflow is:
+Contains measures and transactional information such as:
+
+- Sales Amount
+- Quantity
+- Order ID
+
+**Dimensions**
+
+- DimCustomer
+- DimProduct
+- DimBranch
+- DimDate
+- DimEmployee
+
+This structure provides a business-friendly model for analytical queries and Power BI reporting.
+
+---
+
+## 🔁 ETL Process
+
+The overall data flow is:
 
 ```text
-Start
-  │
-  ▼
-Truncate Bronze Tables
-  │
-  ▼
-Load Cairo Data ──────┐
-                      ├──► Merge / Transformation
-Load Alexandria Data ─┘
-                      │
-                      ▼
-                Silver Layer
-                      │
-                      ▼
-                 Gold Views
+Cairo + Alexandria
+        │
+        ▼
+     Bronze
+        │
+        ▼
+    Staging
+        │
+        ▼
+     Silver
+        │
+        ▼
+      Gold
+        │
+        ▼
+    Power BI
 ```
 
-The Control Flow uses tasks and containers to organize and control the execution of the ETL process.
+The ETL process is implemented using **SQL Server Integration Services (SSIS)**.
+
+The SSIS package handles the movement and processing of data across the warehouse layers.
 
 ---
 
-## Data Flow
+## ⚙️ Incremental Loading & Stored Procedures
 
-SSIS Data Flow Tasks are responsible for moving and transforming the data between the different layers.
+The project includes stored procedures for handling data integration.
 
-The Data Flow process includes:
+### MERGE Procedures
 
-```text
-Source Database
-      │
-      ▼
-OLE DB Source
-      │
-      ▼
-Transformations
-      │
-      ▼
-Data Integration
-      │
-      ▼
-SQL Server Destination
-```
+Separate procedures are provided for the Cairo and Alexandria source entities.
 
-Data from both Cairo and Alexandria source systems is processed and loaded into the warehouse.
+They handle:
 
----
+- Customers
+- Employees
+- Products
+- Orders
+- OrderDetails
 
-## Incremental Loading
-
-Instead of reprocessing the entire dataset during every execution, the pipeline implements **incremental loading**.
-
-New and updated records are identified using ingestion and update timestamps.
-
-The general logic is:
-
-```text
-Source Data
-    │
-    ├── New Records
-    │
-    └── Updated Records
-             │
-             ▼
-      Incremental Load
-             │
-             ▼
-       Data Warehouse
-```
-
-This reduces unnecessary processing and allows the pipeline to focus on data that has changed since the previous load.
-
----
-
-## Stored Procedures
-
-Several stored procedures were created to support the ETL process.
+The `MERGE` logic supports incremental loading by identifying new and updated records.
 
 ### Truncate Procedure
 
-A stored procedure is used to clear the required Bronze tables before a new staging load.
-
-The procedure handles table dependencies by deleting data in the appropriate order.
-
-Example:
-
-```sql
-EXEC dbo.truncate_proc;
-```
-
-### Merge Procedures
-
-Merge logic is used to integrate data from the staging/source layer into the target warehouse tables.
-
-The merge process handles:
-
-- New records
-- Existing records
-- Updated records
-
-This allows the warehouse to remain synchronized with the source systems.
+A dedicated `truncate_proc` procedure is included to clear the required warehouse tables when a full reload or reset is needed.
 
 ---
 
-## SSIS Deployment & Automation
+## ⏱️ Automation
 
-After developing and testing the SSIS package in Visual Studio, the package was deployed to SQL Server.
+The SSIS package was deployed to SQL Server and scheduled using **SQL Server Agent**.
 
-The pipeline was then automated using **SQL Server Agent**.
-
-The automated workflow is:
-
-```text
-SQL Server Agent Job
-        │
-        ▼
-   SSIS Package
-        │
-        ▼
-    ETL Pipeline
-        │
-        ▼
-   Data Warehouse
-```
-
-This allows the ETL pipeline to execute on a scheduled basis without requiring manual execution.
+This allows the ETL pipeline to run automatically according to a defined schedule instead of requiring manual execution.
 
 ---
 
-## Power BI
+## 📊 Power BI Dashboard
 
-A Power BI dashboard was created on top of the Gold-layer analytical views.
+The Gold layer is connected to **Power BI** for reporting and visualization.
 
-The dashboard provides a simple interface for exploring the processed warehouse data and converting it into business insights.
+The dashboard includes metrics such as:
 
-The overall solution therefore connects:
+- **Total Sales:** 850,000
+- **Total Quantity:** 28
+- **Total Orders:** 4
+- **Average Order Value:** 212,500
 
-```text
-SQL Server
-     │
-     ▼
-    SSIS
-     │
-     ▼
-Data Warehouse
-     │
-     ▼
- Gold Views
-     │
-     ▼
- Power BI
-```
+It also provides:
+
+- Sales by Branch
+- Monthly Sales Trend
+- Product Analysis
+- Category Analysis
+- Branch filtering
+
+### Dashboard Preview
+
+![Power BI Dashboard](docs/powerbi_dashboard.png)
 
 ---
 
-## Repository Structure
+## 🖥️ SSIS Control Flow
+
+The project includes an SSIS control-flow design for orchestrating the ETL process.
+
+![SSIS Control Flow](docs/ssis_control_flow.png)
+
+---
+
+## 🛠️ Technologies Used
+
+### Database & ETL
+- Microsoft SQL Server
+- T-SQL
+- SQL Server Integration Services (SSIS)
+- SQL Server Agent
+
+### Data Engineering
+- ETL
+- Data Warehousing
+- Medallion Architecture
+- Incremental Loading
+- `MERGE`
+- Stored Procedures
+- Dimensional Modeling
+
+### Analytics
+- Power BI
+
+### Development
+- Visual Studio
+- Git
+- GitHub
+
+---
+
+## 📁 Repository Structure
 
 ```text
 TechMart-SQL-Server-Data-Warehouse-SSIS-ETL/
 │
 ├── sql/
 │   ├── 01_create_databases.sql
-│   ├── 02_create_bronze_tables.sql
-│   ├── 03_create_silver_tables.sql
-│   ├── 04_create_gold_views.sql
-│   ├── 05_stored_procedures.sql
-│   └── 06_incremental_load.sql
+│   ├── 02_create_datawarehouse_and_medallion_schemas.sql
+│   ├── 03_create_bronze_tables.sql
+│   ├── 04_create_staging_tables.sql
+│   ├── 05_create_silver_tables.sql
+│   ├── 06_create_gold_tables.sql
+│   │
+│   └── stored_procedures/
+│       ├── truncate_Procedure.sql
+│       │
+│       └── merge/
+│           ├── merge_ALEX_Customers.sql
+│           ├── merge_ALEX_Employees.sql
+│           ├── merge_ALEX_OrderDetails.sql
+│           ├── merge_ALEX_Orders.sql
+│           ├── merge_ALEX_Products.sql
+│           ├── merge_CAIRO_Customers.sql
+│           ├── merge_CAIRO_Employees.sql
+│           ├── merge_CAIRO_OrderDetails.sql
+│           ├── merge_CAIRO_Orders.sql
+│           └── merge_CAIRO_Products.sql
 │
 ├── ssis/
-│   └── TechMart_ETL/
-│       ├── Package.dtsx
-│       └── ...
+│   ├── Integration Services Project2.slnx
+│   │
+│   └── Integration Services Project2/
+│       ├── Integration Services Project2.database
+│       ├── Integration Services Project2.dtproj
+│       ├── Project.params
+│       └── TechMart.dtsx
 │
 ├── powerbi/
 │   └── TechMart_Dashboard.pbix
 │
 ├── docs/
-│   ├── architecture.png
-│   ├── ssis_control_flow.png
-│   ├── ssis_data_flow.png
-│   └── powerbi_dashboard.png
+│   ├── powerbi_dashboard.png
+│   └── ssis_control_flow.png
 │
 ├── .gitignore
 └── README.md
@@ -355,27 +321,85 @@ TechMart-SQL-Server-Data-Warehouse-SSIS-ETL/
 
 ---
 
-## Key Concepts Demonstrated
+## 🚀 How the Project Works
 
-- ETL Pipeline Development
-- Data Warehousing
-- Medallion Architecture
-- Bronze / Silver / Gold Layers
-- SQL Server
-- SSIS
-- Control Flow & Data Flow
-- Incremental Loading
-- Stored Procedures
-- Data Integration
-- Data Transformation
-- SQL Server Agent
-- ETL Automation
-- Power BI Reporting
+### 1. Create Source Databases
+
+Run:
+
+```text
+sql/01_create_databases.sql
+```
+
+This creates the Cairo and Alexandria source databases and their tables.
+
+### 2. Create the Data Warehouse
+
+Run:
+
+```text
+sql/02_create_datawarehouse_and_medallion_schemas.sql
+```
+
+This creates the warehouse and Medallion Architecture schemas.
+
+### 3. Create Warehouse Tables
+
+Run the scripts in order:
+
+```text
+03_create_bronze_tables.sql
+04_create_staging_tables.sql
+05_create_silver_tables.sql
+06_create_gold_tables.sql
+```
+
+### 4. Create Stored Procedures
+
+Create the required procedures from:
+
+```text
+sql/stored_procedures/
+```
+
+The `merge/` folder contains the source-specific MERGE procedures used for incremental loading.
+
+### 5. Execute the SSIS Package
+
+Open the SSIS project in Visual Studio and execute the package to run the ETL pipeline.
+
+### 6. Automate Execution
+
+Deploy the SSIS package to SQL Server and configure a SQL Server Agent job to execute it on a schedule.
+
+### 7. Analyze the Data
+
+Connect Power BI to the Gold layer and use the dashboard for reporting and analysis.
 
 ---
 
-## Project Outcome
+## 🎯 Key Learning Outcomes
 
-This project provided hands-on experience in building a complete **on-premises data engineering solution**, from source-system integration and ETL development to warehouse modeling, incremental loading, pipeline automation, and business intelligence reporting.
+Through this project, I gained practical experience with:
 
-It demonstrates how **SQL Server, SSIS, SQL Server Agent, and Power BI** can work together to build a maintainable end-to-end data platform.
+- Designing a SQL Server data warehouse
+- Implementing Medallion Architecture
+- Building ETL pipelines with SSIS
+- Integrating data from multiple source systems
+- Implementing incremental loading with `MERGE`
+- Working with stored procedures
+- Building analytical dimensional models
+- Automating ETL pipelines with SQL Server Agent
+- Connecting a data warehouse to Power BI
+- Translating business requirements into analytical reports
+
+---
+
+## 👩‍💻 Author
+
+**Maryam Galal**
+
+Computer and Information Sciences Graduate  
+Ain Shams University
+
+Interested in **Data Engineering, Data Science, and AI**.
